@@ -10,11 +10,10 @@ class DeepSeekClient(ILLMClient):
             raise ValueError("LLMConfig is not properly configured")
         self.config = llm_config
 
-    async def chat(self,
-                   prompt: str,
-                   system_message: str = "You are a helpful assistant",
-                   temperature: float = 0.6,
-                   max_tokens: int = 512) -> str:
+    async def chat(self, prompt: str) -> str:
+        system_message: str = "You are a helpful assistant"
+        temperature: float = 0.6
+        max_tokens: int = 512
         if not prompt.strip():
             raise ValueError("Prompt cannot be empty")
 
