@@ -7,7 +7,7 @@ from src.core.LLMConfig import LLMConfig
 class DeepSeekClient(ILLMClient):
     def __init__(self, llm_config: LLMConfig):
         if not llm_config.is_configured:
-            raise ValueError("LLMConfig не сконфигурирован правильно")
+            raise ValueError("LLMConfig is not properly configured")
         self.config = llm_config
 
     async def chat(self,
@@ -16,7 +16,7 @@ class DeepSeekClient(ILLMClient):
                    temperature: float = 0.6,
                    max_tokens: int = 512) -> str:
         if not prompt.strip():
-            raise ValueError("Промпт не может быть пустым")
+            raise ValueError("Prompt cannot be empty")
 
         headers = {"Authorization": f"Bearer {self.config.api_key}"}
 
@@ -44,16 +44,16 @@ class DeepSeekClient(ILLMClient):
                 data = response.json()
 
                 if "choices" not in data or not data["choices"]:
-                    raise ValueError("Некорректный формат ответа от API")
+                    raise ValueError("Invalid response format from API")
 
                 return data["choices"][0]["message"]["content"]
 
         except httpx.HTTPStatusError as e:
-            raise Exception(f"HTTP ошибка: {e.response.status_code} - {e.response.text}")
+            raise Exception(f"HTTP error: {e.response.status_code} - {e.response.text}")
         except httpx.RequestError as e:
-            raise Exception(f"Ошибка соединения: {e}")
+            raise Exception(f"Connection error: {e}")
         except KeyError as e:
-            raise ValueError(f"Некорректный формат ответа: отсутствует ключ {e}")
+            raise ValueError(f"Invalid response format: missing key {e}")
 
     def get_model_info(self) -> dict[str, Any]:
         return {
