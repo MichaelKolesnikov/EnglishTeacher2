@@ -20,8 +20,8 @@ class UserRepository(IUserRepository):
         create_tables_sql = """
         CREATE TABLE IF NOT EXISTS users (
             user_id BIGINT PRIMARY KEY,
-            level VARCHAR(20) DEFAULT 'beginner',
-            state INTEGER DEFAULT 0,
+            level VARCHAR(20) DEFAULT 'A1',
+            correction_state INTEGER DEFAULT 0,
             memory TEXT DEFAULT '',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -46,7 +46,7 @@ class UserRepository(IUserRepository):
 
     def add_new_message(self, user_id: int, message: str, participant: str) -> None:
         if not self.user_exists(user_id):
-            self.create_user(user_id, "beginner")
+            self.create_user(user_id, "A1")
 
         sql = "INSERT INTO messages (user_id, message, participant) VALUES (%s, %s, %s)"
         with self._get_connection() as conn:
@@ -54,25 +54,25 @@ class UserRepository(IUserRepository):
                 cursor.execute(sql, (user_id, message, participant))
                 conn.commit()
 
-    def get_state(self, user_id: int) -> int:
+    def get_correction_state(self, user_id: int) -> int:
         if not self.user_exists(user_id):
             return 0
 
-        sql = "SELECT state FROM users WHERE user_id = %s"
+        sql = "SELECT correction_state FROM users WHERE user_id = %s"
         with self._get_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(sql, (user_id,))
                 result = cursor.fetchone()
                 return result[0] if result else 0
 
-    def set_state(self, user_id: int, state: int) -> None:
+    def set_correction_state(self, user_id: int, correction_state: int) -> None:
         if not self.user_exists(user_id):
-            self.create_user(user_id, "beginner")
+            self.create_user(user_id, "A1")
 
-        sql = "UPDATE users SET state = %s, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s"
+        sql = "UPDATE users SET correction_state = %s, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s"
         with self._get_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(sql, (state, user_id))
+                cursor.execute(sql, (correction_state, user_id))
                 conn.commit()
 
     def get_history(self, user_id: int, limit: int = 20) -> str:
@@ -109,7 +109,7 @@ class UserRepository(IUserRepository):
 
     def set_memory(self, user_id: int, memory: str) -> None:
         if not self.user_exists(user_id):
-            self.create_user(user_id, "beginner")
+            self.create_user(user_id, "A1")
 
         sql = "UPDATE users SET memory = %s, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s"
         with self._get_connection() as conn:
@@ -124,7 +124,7 @@ class UserRepository(IUserRepository):
                 cursor.execute(sql, (user_id,))
                 return cursor.fetchone() is not None
 
-    def create_user(self, user_id: int, level: str = "beginner") -> None:
+    def create_user(self, user_id: int, level: str) -> None:
         sql = "INSERT INTO users (user_id, level) VALUES (%s, %s) ON CONFLICT (user_id) DO NOTHING"
         with self._get_connection() as conn:
             with conn.cursor() as cursor:
@@ -133,14 +133,14 @@ class UserRepository(IUserRepository):
 
     def get_user_level(self, user_id: int) -> str:
         if not self.user_exists(user_id):
-            return "beginner"
+            return "A1"
 
         sql = "SELECT level FROM users WHERE user_id = %s"
         with self._get_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(sql, (user_id,))
                 result = cursor.fetchone()
-                return result[0] if result else "beginner"
+                return result[0] if result else "A1"
 
     def set_user_level(self, user_id: int, level: str) -> None:
         if not self.user_exists(user_id):

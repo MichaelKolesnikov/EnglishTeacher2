@@ -7,11 +7,11 @@ class IUserRepository(ABC):
         pass
 
     @abstractmethod
-    def get_state(self, user_id: int) -> int:
+    def get_correction_state(self, user_id: int) -> int:
         pass
 
     @abstractmethod
-    def set_state(self, user_id, state: int) -> None:
+    def set_correction_state(self, user_id, state: int) -> None:
         pass
 
     @abstractmethod

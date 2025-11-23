@@ -11,24 +11,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Загрузка конфигурации
 llm_config = get_llm_config_from_env()
 
-# Инициализация компонентов
 user_repository = UserRepository()
 deepseek_client = DeepSeekClient(llm_config)
 english_teacher = EnglishTeacher(user_repository, deepseek_client)
 
-# Создание роутера
 router = Router()
 
 
 @router.message(CommandStart())
 async def start_handler(message: Message):
-    """Обработчик команды /start"""
     user_id = message.from_user.id
     if not user_repository.user_exists(user_id):
-        user_repository.create_user(user_id, "beginner")
+        user_repository.create_user(user_id, "A1")
 
     welcome_text = (
         "👋 Welcome to your English teacher bot!\n\n"
@@ -42,15 +38,11 @@ async def start_handler(message: Message):
 
 @router.message(F.text)
 async def message_handler(message: Message):
-    """Обработчик текстовых сообщений"""
     user_id = message.from_user.id
     user_message = message.text
 
     try:
-        # Получаем ответ от EnglishTeacher
         bot_response = await english_teacher.get_answer(user_id, user_message)
-
-        # Отправляем ответ пользователю
         await message.answer(bot_response)
 
     except Exception as e:
