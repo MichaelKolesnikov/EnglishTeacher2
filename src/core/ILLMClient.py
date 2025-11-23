@@ -4,7 +4,7 @@ from typing import Any
 
 class ILLMClient(ABC):
     @abstractmethod
-    async def chat(self, prompt: str) -> str:
+    async def get_answer(self, prompt: str) -> str:
         pass
 
     @abstractmethod
