@@ -10,9 +10,8 @@ class DeepSeekClient(ILLMClient):
             raise ValueError("LLMConfig is not properly configured")
         self.config = llm_config
 
-    async def get_answer(self, prompt: str) -> str:
+    async def get_answer(self, prompt: str, temperature: float = 0.3) -> str:
         system_message: str = "You are a helpful assistant"
-        temperature: float = 0.6
         max_tokens: int = 512
         if not prompt.strip():
             raise ValueError("Prompt cannot be empty")
@@ -27,7 +26,7 @@ class DeepSeekClient(ILLMClient):
         payload = {
             "model": self.config.model,
             "messages": messages,
-            "temperature": max(0.1, min(temperature, 2.0)),
+            "temperature": max(0.1, min(temperature, 1)),
             "max_tokens": max(1, min(max_tokens, 4096)),
             "stream": False
         }

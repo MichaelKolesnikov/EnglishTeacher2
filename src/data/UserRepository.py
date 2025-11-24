@@ -9,6 +9,27 @@ class UserRepository(IUserRepository):
         self.connection_string = connection_string
         self._ensure_tables_exist()
 
+    def get_mistake(self, user_id: int) -> str:
+        if not self.user_exists(user_id):
+            self.create_user(user_id, "A1")
+
+        sql = "SELECT mistake FROM users WHERE user_id = %s"
+        with self._get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql, (user_id,))
+                result = cursor.fetchone()
+                return result[0] if result else ""
+
+    def set_mistake(self, user_id: int, mistake: str) -> None:
+        if not self.user_exists(user_id):
+            self.create_user(user_id, "A1")
+
+        sql = "UPDATE users SET mistake = %s, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s"
+        with self._get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql, (mistake, user_id))
+                conn.commit()
+
     @staticmethod
     def _get_default_connection_string() -> str:
         return "dbname='database' user='root' password='root' host='localhost' port='5432'"
@@ -23,6 +44,7 @@ class UserRepository(IUserRepository):
             level VARCHAR(20) DEFAULT 'A1',
             correction_state INTEGER DEFAULT 0,
             memory TEXT DEFAULT '',
+            mistake TEXT DEFAULT '',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );

@@ -3,6 +3,14 @@ from abc import ABC, abstractmethod
 
 class IUserRepository(ABC):
     @abstractmethod
+    def get_mistake(self, user_id: int) -> str:
+        pass
+
+    @abstractmethod
+    def set_mistake(self, user_id: int, mistake: str) -> None:
+        pass
+
+    @abstractmethod
     def add_new_message(self, user_id: int, message: str, participant: str) -> None:
         pass
 
