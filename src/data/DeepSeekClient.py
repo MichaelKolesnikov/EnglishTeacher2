@@ -2,13 +2,15 @@ from src.core.ILLMClient import ILLMClient
 from typing import Any
 import httpx
 from src.core.LLMConfig import LLMConfig
+from src.core.ILLMLogger import ILLMLogger
 
 
 class DeepSeekClient(ILLMClient):
-    def __init__(self, llm_config: LLMConfig):
+    def __init__(self, llm_config: LLMConfig, logger: ILLMLogger | None = None):
         if not llm_config.is_configured:
             raise ValueError("LLMConfig is not properly configured")
         self.config = llm_config
+        self.logger: ILLMLogger | None = logger
 
     async def get_answer(self, prompt: str, temperature: float = 0.3) -> str:
         system_message: str = "You are a helpful assistant"
@@ -43,6 +45,17 @@ class DeepSeekClient(ILLMClient):
 
                 if "choices" not in data or not data["choices"]:
                     raise ValueError("Invalid response format from API")
+
+                content = data["choices"][0]["message"]["content"]
+
+                if self.logger:
+                    await self.logger.log_request(
+                        prompt=prompt,
+                        response=content,
+                        temperature=temperature,
+                        model_info=self.get_model_info(),
+                        metadata={"type": "raw_single_prompt"}
+                    )
 
                 return data["choices"][0]["message"]["content"]
 

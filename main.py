@@ -1,5 +1,6 @@
 from src.data.DeepSeekClient import DeepSeekClient
 from src.data.UserRepository import UserRepository
+from src.data.JsonLlmLogger import JsonLlmLogger
 from src.data.get_llm_config_from_env import get_llm_config_from_env
 from src.core.EnglishTeacher import EnglishTeacher
 from aiogram import Bot, Dispatcher, Router, F
@@ -11,21 +12,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-llm_config = get_llm_config_from_env()
-
-user_repository = UserRepository()
-deepseek_client = DeepSeekClient(llm_config)
-english_teacher = EnglishTeacher(user_repository, deepseek_client)
+english_teacher = EnglishTeacher(
+    UserRepository(),
+    DeepSeekClient(
+        get_llm_config_from_env(),
+        JsonLlmLogger()
+    )
+)
 
 router = Router()
 
 
 @router.message(CommandStart())
 async def start_handler(message: Message):
-    user_id = message.from_user.id
-    if not user_repository.user_exists(user_id):
-        user_repository.create_user(user_id, "A1")
-
     welcome_text = (
         "👋 Welcome to your English teacher bot!\n\n"
         "I'll help you improve your English skills. "
