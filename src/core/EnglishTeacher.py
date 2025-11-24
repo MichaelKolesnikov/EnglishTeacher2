@@ -83,23 +83,20 @@ class EnglishTeacher:
             return "", False
 
         if "|" not in raw:
-            # fallback — если LLM сломался
             return raw, False
 
         mistake_text, error_type = raw.rsplit("|", 1)
-        mistake_text = mistake_text.strip()
         error_type = error_type.strip().upper()
 
-        prev_type = self._extract_type(prev_mistake)
+        prev_type = EnglishTeacher._extract_type(prev_mistake)
 
         is_repeat = prev_type != "" and prev_type == error_type
 
-        # Сохраняем полную строку с типом
         full_mistake = raw if "|" in raw else f"{raw} | UNKNOWN"
-
         return full_mistake, is_repeat
 
-    def _extract_type(self, mistake_str: str) -> str:
+    @staticmethod
+    def _extract_type(mistake_str: str) -> str:
         if not mistake_str or "|" not in mistake_str:
             return ""
         return mistake_str.rsplit("|", 1)[-1].strip().upper()
