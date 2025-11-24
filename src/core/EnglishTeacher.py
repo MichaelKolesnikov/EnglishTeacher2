@@ -21,13 +21,13 @@ class EnglishTeacher:
             "The student made no grammar or vocabulary mistake in the last message. "
             "Just continue the conversation naturally in English.",
 
-            "The student made a new mistake. The exact wrong phrase is: \"{mistake}\"\n"
-            "Gently hint at the correct form or use the correct version naturally in your reply. "
-            "Do it in English only. Never point out the mistake directly.",
+            "The student made a new mistake: \"{mistake}\"\n"
+            "Gently hint at the correct form or use it naturally in your reply. "
+            "Do it in English only. ",
 
-            "The student repeated the exact same mistake again: \"{mistake}\"\n"
-            "Now briefly explain the rule in Russian (1–2 sentences max), then immediately switch back to English "
-            "and continue the conversation normally."
+            "The student repeated the same TYPE of mistake again: \"{mistake}\"\n"
+            "Briefly explain the rule in Russian (1–2 short sentences, friendly tone), "
+            "then immediately switch back to English and continue the conversation warmly."
         ]
 
     async def get_answer(self, user_id: int, user_message: str) -> str:
@@ -48,7 +48,7 @@ class EnglishTeacher:
             prompt += self.level_was_updated_prompt + "# New level:\n" + new_level + self.prompt_divider
         history = self.user_repository.get_history(user_id)
         prompt += "# History:\n" + history + self.prompt_divider
-        answer = await self.llm_client.get_answer(prompt, temperature=0.6)
+        answer = await self.llm_client.get_answer(prompt, temperature=0.3)
         self.user_repository.add_new_message(user_id, answer, "")
         return answer
 
@@ -69,8 +69,37 @@ class EnglishTeacher:
         return None
 
     async def _get_mistakes_and_is_it_second(self, user_message: str, prev_mistake: str) -> tuple[str, bool]:
-        mistake = await self.llm_client.get_answer(self.check_prompt + "# Message:\n" + user_message + self.prompt_divider + "# Previous mistake:\n" + prev_mistake)
-        flag = "SECOND"
-        if mistake.startswith(flag):
-            return mistake[len(flag):], True
-        return mistake, False
+        prompt = (
+                self.check_prompt
+                + "# Message:\n" + user_message
+                + self.prompt_divider
+                + "# Previous mistake type (for context only):\n" + self._extract_type(prev_mistake)
+        )
+
+        raw = await self.llm_client.get_answer(prompt, temperature=0.3)
+        raw = raw.strip()
+
+        if raw == "NO_ERROR" or not raw:
+            return "", False
+
+        if "|" not in raw:
+            # fallback — если LLM сломался
+            return raw, False
+
+        mistake_text, error_type = raw.rsplit("|", 1)
+        mistake_text = mistake_text.strip()
+        error_type = error_type.strip().upper()
+
+        prev_type = self._extract_type(prev_mistake)
+
+        is_repeat = prev_type != "" and prev_type == error_type
+
+        # Сохраняем полную строку с типом
+        full_mistake = raw if "|" in raw else f"{raw} | UNKNOWN"
+
+        return full_mistake, is_repeat
+
+    def _extract_type(self, mistake_str: str) -> str:
+        if not mistake_str or "|" not in mistake_str:
+            return ""
+        return mistake_str.rsplit("|", 1)[-1].strip().upper()
