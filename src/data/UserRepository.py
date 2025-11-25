@@ -8,7 +8,14 @@ class UserRepository(IUserRepository):
         if connection_string is None:
             connection_string = UserRepository._get_default_connection_string()
         self.connection_string = connection_string
-        self._ensure_tables_exist()
+        self._ensure_tables_exist()\
+
+    def get_top_error_types(self, user_id: int, top_n: int = 3) -> list[str]:
+        counters = self.get_error_counters_dict(user_id)
+        if not counters:
+            return []
+        sorted_items = sorted(counters.items(), key=lambda x: x[1], reverse=True)
+        return [error_type for error_type, count in sorted_items[:top_n]]
 
     def get_error_counter(self, user_id: int, error_type: str) -> int:
         counters = self.get_error_counters_dict(user_id)

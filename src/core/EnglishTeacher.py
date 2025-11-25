@@ -74,16 +74,21 @@ class EnglishTeacher:
 
     async def get_answer(self, user_id: int, user_message: str) -> str:
         self.user_repository.add_new_message(user_id, user_message, str(user_id))
+
+        top_error_types = self.user_repository.get_top_error_types(user_id, top_n=3)
+        top_errors_str = ", ".join(top_error_types) if top_error_types else "none"
+
         await self._update_memory_about_user(user_id)
         new_level = await self._update_level(user_id)
 
-        prev_mistake = self.user_repository.get_mistake(user_id)
-        mistake_raw, _ = await self._get_mistakes_and_is_it_second(user_message, prev_mistake)  # старый метод больше не нужен для "второго раза"
+        mistake_raw = await self._get_mistake(
+            user_message, top_errors_str
+        )
 
         mistake_text = ""
         error_type = None
 
-        if mistake_raw and mistake_raw != "NO_ERROR":
+        if mistake_raw:
             parts = mistake_raw.split("||")
             mistake_text = parts[0].strip()
             if len(parts) >= 2:
@@ -156,29 +161,18 @@ class EnglishTeacher:
             return new_level
         return None
 
-    async def _get_mistakes_and_is_it_second(self, user_message: str, prev_mistake: str) -> tuple[str, bool]:
+    async def _get_mistake(self, user_message: str, top_error_types: str) -> str:
         prompt = self.check_prompt.format(
             message=user_message,
             topic_list=TOPIC_LIST,
-            prev_mistake=prev_mistake
+            top_error_types=top_error_types
         )
-
         raw = await self.llm_client.get_answer(prompt, temperature=0.3)
         raw = raw.strip()
 
-        if raw == "NO_ERROR" or not raw:
-            return "", False
-
-        if "|" not in raw:
-            return raw, False
-
-        mistake_text, error_type = raw.rsplit("|", 1)
-        error_type = error_type.strip().upper()
-
-        prev_type = EnglishTeacher._extract_type(prev_mistake)
-
-        is_repeat = prev_type != "" and prev_type == error_type
-        return raw, is_repeat
+        if raw == "NO_ERROR":
+            return ""
+        return raw
 
     @staticmethod
     def _extract_type(mistake_str: str) -> str:

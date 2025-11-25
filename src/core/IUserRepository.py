@@ -3,6 +3,10 @@ from abc import ABC, abstractmethod
 
 class IUserRepository(ABC):
     @abstractmethod
+    def get_top_error_types(self, user_id: int, top_n: int = 3) -> list[str]:
+        pass
+
+    @abstractmethod
     def get_error_counter(self, user_id: int, error_type: str) -> int:
         pass
 

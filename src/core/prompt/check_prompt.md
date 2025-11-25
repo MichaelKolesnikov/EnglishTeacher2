@@ -42,7 +42,7 @@ Other:
 GERUND_INFINITIVE, PARTICIPLE, COMPARATIVE_SUPERLATIVE, TAG_QUESTION, REPORTED_SPEECH
 
 Prioritization (choose the most important error according to this order):
-1. The same TYPE of mistake as in the previous message (e.g. again TENSE, again ARTICLE, again PREPOSITION etc.) — this is the highest priority!
+1. The same TYPE of mistake as in the previous messages (e.g. again TENSE, again ARTICLE, again PREPOSITION etc.) — this is the highest priority!
 2. Errors that change or seriously distort the meaning
 3. Tense and aspect errors
 4. Article and preposition errors
@@ -52,7 +52,7 @@ Prioritization (choose the most important error according to this order):
 
 If the student repeated the same type of error as last time — always point exactly at it, even if there are more serious mistakes in the current message.
 
-Previous mistake type (for context only): {prev_mistake}
+Previous mistake types (for context only): {top_error_types}
 
 Examples:
 "I go home yesterday" → "I go home yesterday" → I went home yesterday | TENSE
