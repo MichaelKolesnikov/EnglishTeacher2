@@ -12,10 +12,10 @@ Rules:
 - Keep concise bullet-point format.
 - If nothing new → return empty string.
 
-Current profile (empty if none):
+# Current profile (empty if none), information about user:
 {current_memory}
 
-Recent conversation:
+# Recent conversation:
 {history}
 
 Output new full profile or empty string:

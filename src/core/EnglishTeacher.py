@@ -145,7 +145,7 @@ class EnglishTeacher:
         history = self.user_repository.get_history(user_id)
         current_memory = self.user_repository.get_memory(user_id)
         new_memory = await self.llm_client.get_answer(
-            self.update_memory_prompt + "# History:\n" + history + "# Current memory:\n" + current_memory,
+            self.update_memory_prompt.format(history=history, current_memory=current_memory),
             temperature=0.5
         )
         if new_memory:
