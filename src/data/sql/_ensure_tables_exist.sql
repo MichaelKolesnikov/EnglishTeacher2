@@ -1,7 +1,6 @@
 CREATE TABLE IF NOT EXISTS users (
     user_id BIGINT PRIMARY KEY,
     level VARCHAR(20) DEFAULT 'A1',
-    correction_state INTEGER DEFAULT 0,
     memory TEXT DEFAULT '',
     mistake TEXT DEFAULT '',
     error_counters JSONB DEFAULT '{}',

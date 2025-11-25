@@ -162,27 +162,6 @@ class UserRepository(IUserRepository):
                 cursor.execute(sql, (user_id, message, participant))
                 conn.commit()
 
-    def get_correction_state(self, user_id: int) -> int:
-        if not self.user_exists(user_id):
-            return 0
-
-        sql = "SELECT correction_state FROM users WHERE user_id = %s"
-        with self._get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(sql, (user_id,))
-                result = cursor.fetchone()
-                return result[0] if result else 0
-
-    def set_correction_state(self, user_id: int, correction_state: int) -> None:
-        if not self.user_exists(user_id):
-            self.create_user(user_id, "A1")
-
-        sql = "UPDATE users SET correction_state = %s, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s"
-        with self._get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(sql, (correction_state, user_id))
-                conn.commit()
-
     def get_history(self, user_id: int, limit: int = 20) -> str:
         if not self.user_exists(user_id):
             return ""

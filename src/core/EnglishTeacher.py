@@ -104,7 +104,6 @@ class EnglishTeacher:
         )
 
         self.user_repository.set_mistake(user_id, mistake_text or "")
-        self.user_repository.set_correction_state(user_id, correction_level)  # оставляем для совместимости, если где-то используется
 
         if not mistake_text and user_id not in self.message_counter:
             self.message_counter[user_id] = 0
