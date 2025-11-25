@@ -3,6 +3,18 @@ from abc import ABC, abstractmethod
 
 class IUserRepository(ABC):
     @abstractmethod
+    def get_error_counter(self, user_id: int, error_type: str) -> int:
+        pass
+
+    @abstractmethod
+    def update_error_counter(self, user_id: int, error_type: str, value: int):
+        pass
+
+    @abstractmethod
+    def decrement_all_error_counters(self, user_id: int, excluded_type: str | None = None):
+        pass
+
+    @abstractmethod
     def get_topic_status(self, user_id: int, topic_key: str) -> dict:
         pass
 

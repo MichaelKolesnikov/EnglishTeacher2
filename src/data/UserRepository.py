@@ -1,5 +1,6 @@
 import psycopg2
 from src.core.IUserRepository import IUserRepository
+import json
 
 
 class UserRepository(IUserRepository):
@@ -8,6 +9,57 @@ class UserRepository(IUserRepository):
             connection_string = UserRepository._get_default_connection_string()
         self.connection_string = connection_string
         self._ensure_tables_exist()
+
+    def get_error_counter(self, user_id: int, error_type: str) -> int:
+        counters = self.get_error_counters_dict(user_id)
+        return counters.get(error_type, 0)
+
+    def update_error_counter(self, user_id: int, error_type: str, value: int):
+        counters = self.get_error_counters_dict(user_id)
+        counters[error_type] = min(100, max(0, value))  # защита от багов
+        self.save_error_counters_dict(user_id, counters)
+
+    def get_error_counters_dict(self, user_id: int) -> dict[str, int]:
+        """Возвращает весь словарь error_counters как dict[str, int]"""
+        sql = "SELECT error_counters FROM users WHERE user_id = %s"
+        with self._get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql, (user_id,))
+                row = cursor.fetchone()
+                if row and row[0]:
+                    # Приводим все значения к int
+                    raw = row[0]  # это dict из JSONB
+                    return {k: int(v) if isinstance(v, (str, int)) else 0 for k, v in raw.items()}
+        return {}
+
+    def save_error_counters_dict(self, user_id: int, counters: dict[str, int]):
+        """Сохраняет весь словарь обратно в БД"""
+        sql = """
+            UPDATE users 
+            SET error_counters = %s::jsonb, 
+                updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = %s
+        """
+        with self._get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql, (json.dumps(counters), user_id))
+                conn.commit()
+
+    def decrement_all_error_counters(self, user_id: int, excluded_type: str | None = None):
+        """
+        Уменьшает все счётчики на 1 (кроме excluded_type), но не ниже 0.
+        Работает через Python — 100% надёжно.
+        """
+        counters = self.get_error_counters_dict(user_id)
+
+        for error_type in counters:
+            if error_type != excluded_type:
+                counters[error_type] = max(0, counters[error_type] - 1)
+
+        # Удаляем нулевые значения (по желанию — чище)
+        counters = {k: v for k, v in counters.items() if v > 0}
+
+        self.save_error_counters_dict(user_id, counters)
 
     def get_topic_status(self, user_id: int, topic_key: str) -> dict:
         with open("src/data/sql/get_topic_status.sql") as f:

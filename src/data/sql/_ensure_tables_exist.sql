@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
     correction_state INTEGER DEFAULT 0,
     memory TEXT DEFAULT '',
     mistake TEXT DEFAULT '',
+    error_counters JSONB DEFAULT '{}',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -31,6 +32,7 @@ CREATE TABLE IF NOT EXISTS user_topics (
     last_mastered       TIMESTAMP,
     last_mistake        TIMESTAMP,
     last_practiced     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    error_type VARCHAR(50),
     UNIQUE(user_id, topic_key)
 );
 
