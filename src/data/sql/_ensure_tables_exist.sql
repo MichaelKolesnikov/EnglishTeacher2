@@ -27,11 +27,6 @@ CREATE TABLE IF NOT EXISTS user_topics (
     mastery_streak      INTEGER DEFAULT 0,
     times_correct       INTEGER DEFAULT 0,
     times_mistake       INTEGER DEFAULT 0,
-    first_seen          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_mastered       TIMESTAMP,
-    last_mistake        TIMESTAMP,
-    last_practiced     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    error_type VARCHAR(50),
     UNIQUE(user_id, topic_key)
 );
 

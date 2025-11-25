@@ -30,18 +30,8 @@ class IUserRepository(ABC):
             status: str | None = None,
             mastery_streak: int | None = None,
             times_correct: int | None = None,
-            times_mistake: int | None = None,
-            last_mastered: bool | None = None,
-            last_mistake: bool | None = None
+            times_mistake: int | None = None
     ) -> None:
-        pass
-
-    @abstractmethod
-    def get_mistake(self, user_id: int) -> str:
-        pass
-
-    @abstractmethod
-    def set_mistake(self, user_id: int, mistake: str) -> None:
         pass
 
     @abstractmethod

@@ -16,16 +16,11 @@ class TopicMaster:
         if correct:
             new_streak = current["mastery_streak"] + 1
             new_status = "mastered" if new_streak >= self.MASTERY_THRESHOLD else current["status"]
-            if new_status == "mastered" and current["status"] != "mastered":
-                last_mastered = True
-            else:
-                last_mastered = None
             self.repo.upsert_topic_status(
                 user_id, topic_key,
                 status=new_status if new_status != current["status"] else None,
                 mastery_streak=new_streak,
                 times_correct=1,
-                last_mastered=last_mastered
             )
         else:
             new_status = "weak" if current["status"] == "mastered" else current["status"]
@@ -36,7 +31,6 @@ class TopicMaster:
                 status="practicing" if current["status"] == "new" else new_status,
                 mastery_streak=0,
                 times_mistake=1,
-                last_mistake=True
             )
 
     def get_next_topic(self, user_id: int, current_cefr: str) -> str | None:

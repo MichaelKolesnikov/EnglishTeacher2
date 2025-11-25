@@ -103,8 +103,6 @@ class EnglishTeacher:
             user_id, error_type
         )
 
-        self.user_repository.set_mistake(user_id, mistake_text or "")
-
         if not mistake_text and user_id not in self.message_counter:
             self.message_counter[user_id] = 0
         if not mistake_text:
@@ -172,9 +170,3 @@ class EnglishTeacher:
         if raw == "NO_ERROR":
             return ""
         return raw
-
-    @staticmethod
-    def _extract_type(mistake_str: str) -> str:
-        if not mistake_str or "|" not in mistake_str:
-            return ""
-        return mistake_str.rsplit("|", 1)[-1].strip().upper()

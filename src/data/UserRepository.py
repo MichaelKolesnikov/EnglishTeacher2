@@ -96,9 +96,7 @@ class UserRepository(IUserRepository):
             status: str | None = None,
             mastery_streak: int | None = None,
             times_correct: int | None = None,
-            times_mistake: int | None = None,
-            last_mastered: bool | None = None,
-            last_mistake: bool | None = None,
+            times_mistake: int | None = None
     ) -> None:
         with open("src/data/sql/upsert_topic_status.sql") as f:
             sql = f.read()
@@ -106,34 +104,12 @@ class UserRepository(IUserRepository):
         params = (
             user_id, topic_key,
             status, mastery_streak,
-            times_correct or 0, times_mistake or 0,
-            last_mastered, last_mistake
+            times_correct or 0, times_mistake or 0
         )
 
         with self._get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(sql, params)
-                conn.commit()
-
-    def get_mistake(self, user_id: int) -> str:
-        if not self.user_exists(user_id):
-            self.create_user(user_id, "A1")
-
-        sql = "SELECT mistake FROM users WHERE user_id = %s"
-        with self._get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(sql, (user_id,))
-                result = cursor.fetchone()
-                return result[0] if result else ""
-
-    def set_mistake(self, user_id: int, mistake: str) -> None:
-        if not self.user_exists(user_id):
-            self.create_user(user_id, "A1")
-
-        sql = "UPDATE users SET mistake = %s, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s"
-        with self._get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(sql, (mistake, user_id))
                 conn.commit()
 
     @staticmethod
