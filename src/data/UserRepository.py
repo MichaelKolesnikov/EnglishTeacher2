@@ -9,6 +9,53 @@ class UserRepository(IUserRepository):
         self.connection_string = connection_string
         self._ensure_tables_exist()
 
+    def get_topic_status(self, user_id: int, topic_key: str) -> dict:
+        with open("src/data/sql/get_topic_status.sql") as f:
+            sql = f.read()
+        with self._get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, (user_id, topic_key))
+                row = cur.fetchone()
+                if row:
+                    return {
+                        "status": row[0],
+                        "mastery_streak": row[1],
+                        "times_correct": row[2],
+                        "times_mistake": row[3],
+                    }
+                return {
+                    "status": "new",
+                    "mastery_streak": 0,
+                    "times_correct": 0,
+                    "times_mistake": 0,
+                }
+
+    def upsert_topic_status(
+            self,
+            user_id: int,
+            topic_key: str,
+            status: str | None = None,
+            mastery_streak: int | None = None,
+            times_correct: int | None = None,
+            times_mistake: int | None = None,
+            last_mastered: bool | None = None,
+            last_mistake: bool | None = None,
+    ) -> None:
+        with open("src/data/sql/upsert_topic_status.sql") as f:
+            sql = f.read()
+
+        params = (
+            user_id, topic_key,
+            status, mastery_streak,
+            times_correct or 0, times_mistake or 0,
+            last_mastered, last_mistake
+        )
+
+        with self._get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, params)
+                conn.commit()
+
     def get_mistake(self, user_id: int) -> str:
         if not self.user_exists(user_id):
             self.create_user(user_id, "A1")
@@ -38,28 +85,8 @@ class UserRepository(IUserRepository):
         return psycopg2.connect(self.connection_string)
 
     def _ensure_tables_exist(self) -> None:
-        create_tables_sql = """
-        CREATE TABLE IF NOT EXISTS users (
-            user_id BIGINT PRIMARY KEY,
-            level VARCHAR(20) DEFAULT 'A1',
-            correction_state INTEGER DEFAULT 0,
-            memory TEXT DEFAULT '',
-            mistake TEXT DEFAULT '',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-
-        CREATE TABLE IF NOT EXISTS messages (
-            id SERIAL PRIMARY KEY,
-            user_id BIGINT REFERENCES users(user_id) ON DELETE CASCADE,
-            message TEXT NOT NULL,
-            participant VARCHAR(50) NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-
-        CREATE INDEX IF NOT EXISTS idx_messages_user_id ON messages(user_id);
-        CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
-        """
+        with open("src/data/sql/_ensure_tables_exist.sql") as f:
+            create_tables_sql = f.read()
 
         with self._get_connection() as conn:
             with conn.cursor() as cursor:
@@ -101,13 +128,9 @@ class UserRepository(IUserRepository):
         if not self.user_exists(user_id):
             return ""
 
-        sql = """
-        SELECT participant, message 
-        FROM messages 
-        WHERE user_id = %s 
-        ORDER BY created_at DESC 
-        LIMIT %s
-        """
+        with open("src/data/sql/get_history.sql") as f:
+            sql = f.read()
+
         with self._get_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(sql, (user_id, limit))

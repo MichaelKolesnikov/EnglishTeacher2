@@ -41,15 +41,18 @@ SPELLING, CAPITALIZATION, PUNCTUATION
 Other:
 GERUND_INFINITIVE, PARTICIPLE, COMPARATIVE_SUPERLATIVE, TAG_QUESTION, REPORTED_SPEECH
 
-Prioritization (from highest to lowest):
-1. Errors that change or obscure meaning
-2. Tense/aspect errors
-3. Article/preposition errors
-4. Word order / missing words
-5. Vocabulary/collocation
-6. Spelling/punctuation
+Prioritization (choose the most important error according to this order):
+1. The same TYPE of mistake as in the previous message (e.g. again TENSE, again ARTICLE, again PREPOSITION etc.) — this is the highest priority!
+2. Errors that change or seriously distort the meaning
+3. Tense and aspect errors
+4. Article and preposition errors
+5. Word order, missing or extra words
+6. Vocabulary and collocation mistakes
+7. Spelling and punctuation
 
-Previous mistake type (for context only): {prev_type}
+If the student repeated the same type of error as last time — always point exactly at it, even if there are more serious mistakes in the current message.
+
+Previous mistake type (for context only): {prev_mistake}
 
 Examples:
 "I go home yesterday" → "I go home yesterday" → I went home yesterday | TENSE
@@ -63,3 +66,13 @@ Examples:
 
 Student's message:
 {message}
+
+If you found an error that clearly belongs to one of the topics below, 
+add ||topic_key at the very end (after the second |).
+
+Available topics: {topic_list}
+
+Example outputs:
+"I go yesterday" → "go" → went | TENSE || past_simple_regular
+"in home" → "in home" → at home | PREPOSITION || prepositions_place_basic
+"more better" → "more better" → better | COMPARATIVE_SUPERLATIVE || comparatives

@@ -3,6 +3,24 @@ from abc import ABC, abstractmethod
 
 class IUserRepository(ABC):
     @abstractmethod
+    def get_topic_status(self, user_id: int, topic_key: str) -> dict:
+        pass
+
+    @abstractmethod
+    def upsert_topic_status(
+            self,
+            user_id: int,
+            topic_key: str,
+            status: str | None = None,
+            mastery_streak: int | None = None,
+            times_correct: int | None = None,
+            times_mistake: int | None = None,
+            last_mastered: bool | None = None,
+            last_mistake: bool | None = None
+    ) -> None:
+        pass
+
+    @abstractmethod
     def get_mistake(self, user_id: int) -> str:
         pass
 
